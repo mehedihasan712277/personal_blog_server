@@ -9,10 +9,10 @@
   ],
   "license": "ISC",
   "author": "Md. Mehedi Hasan",
-  "type": "module",
+  "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start" : "node index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
