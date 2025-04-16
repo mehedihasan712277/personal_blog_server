@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -24,10 +24,78 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        const userDatabase = client.db("personal_Blog_DB").collection("users");
+        const postDatabase = client.db("personal_Blog_DB").collection("posts");
+        const categoryDatabase = client.db("personal_Blog_DB").collection("categories");
+
         app.get("/", (req, res) => {
             res.send("server is running ok")
         })
+
+        // Get all users
+        app.get('/api/users', async (req, res) => {
+            try {
+                const users = await userDatabase.find().toArray();
+                res.status(200).json(users);
+            } catch (err) {
+                res.status(500).json({ error: err.message });
+            }
+        });
+
+        // add user
+        app.post('/api/users', async (req, res) => {
+            try {
+                const result = await userDatabase.insertOne(req.body);
+                res.status(201).json({ insertedId: result.insertedId });
+            } catch (err) {
+                res.status(500).json({ error: err.message });
+            }
+        });
+
+
+        // Add post
+        app.post('/api/posts', async (req, res) => {
+            try {
+                const result = await postDatabase.insertOne(req.body);
+                res.status(201).send(result);
+            } catch (err) {
+                console.log(err);
+
+                res.status(500).json({ error: err.message });
+            }
+        });
+
+        // Get all posts
+        app.get('/api/posts', async (req, res) => {
+            try {
+                const posts = await postDatabase.find().toArray();
+                res.status(200).json(posts);
+            } catch (err) {
+                res.status(500).json({ error: err.message });
+            }
+        });
+
+        // Delete post
+        app.delete('/api/posts/:id', async (req, res) => {
+            try {
+                const result = await postDatabase.deleteOne({ _id: new ObjectId(req.params.id) });
+                if (result.deletedCount === 0) return res.status(404).json({ message: 'Post not found' });
+                res.status(200).json({ message: 'Post deleted' });
+            } catch (err) {
+                res.status(500).json({ error: err.message });
+            }
+        });
+
+        // 6. Get categories
+        app.get('/api/categories', async (req, res) => {
+            try {
+                const categories = await categoryDatabase.find().toArray();
+                res.status(200).json(categories);
+            } catch (err) {
+                res.status(500).json({ error: err.message });
+            }
+        });
+
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
