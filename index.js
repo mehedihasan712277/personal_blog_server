@@ -65,6 +65,33 @@ async function run() {
             }
         });
 
+        // Update comments of a specific post
+        app.put('/api/posts/:id', async (req, res) => {
+            const postId = req.params.id;
+            const { comment } = req.body; // expects: { comment: { content, createdAt, ... } }
+
+            if (!comment || typeof comment !== "object") {
+                return res.status(400).json({ error: "Invalid comment data" });
+            }
+
+            try {
+                const result = await postDatabase.updateOne(
+                    { _id: new ObjectId(postId) },
+                    { $push: { comments: comment } }
+                );
+
+                if (result.modifiedCount === 0) {
+                    return res.status(404).json({ message: "Post not found or comment not added" });
+                }
+
+                res.status(200).json({ message: "Comment added successfully" });
+            } catch (err) {
+                console.error(err);
+                res.status(500).json({ error: err.message });
+            }
+        });
+
+
         // Get all posts
         app.get('/api/posts', async (req, res) => {
             try {
@@ -74,6 +101,23 @@ async function run() {
                 res.status(500).json({ error: err.message });
             }
         });
+
+        // Get a single post by ID
+        app.get('/api/posts/:id', async (req, res) => {
+            try {
+                const id = req.params.id;
+                const post = await postDatabase.findOne({ _id: new ObjectId(id) });
+
+                if (!post) {
+                    return res.status(404).json({ message: 'Post not found' });
+                }
+
+                res.status(200).json(post);
+            } catch (err) {
+                res.status(500).json({ error: err.message });
+            }
+        });
+
 
         // Delete post
         app.delete('/api/posts/:id', async (req, res) => {
