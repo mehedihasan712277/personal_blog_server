@@ -103,20 +103,46 @@ async function run() {
         });
 
         // Get a single post by ID
+        // app.get('/api/posts/:id', async (req, res) => {
+        //     try {
+        //         const id = req.params.id;
+        //         const post = await postDatabase.findOne({ _id: new ObjectId(id) });
+
+        //         if (!post) {
+        //             return res.status(404).json({ message: 'Post not found' });
+        //         }
+
+        //         res.status(200).json(post);
+        //     } catch (err) {
+        //         res.status(500).json({ error: err.message });
+        //     }
+        // });
+
+
         app.get('/api/posts/:id', async (req, res) => {
             try {
                 const id = req.params.id;
-                const post = await postDatabase.findOne({ _id: new ObjectId(id) });
+                const _id = new ObjectId(id);
 
-                if (!post) {
-                    return res.status(404).json({ message: 'Post not found' });
-                }
+                // Increment the view count
+                const updated = await postDatabase.findOneAndUpdate(
+                    { _id },
+                    { $inc: { view: 1 } },
+                    { returnDocument: 'after' } // return the updated document
+                );
 
-                res.status(200).json(post);
+                // if (!updated.value) {
+                //     return res.status(404).json({ message: 'Post not found' });
+                // }
+                // console.log(updated);
+
+
+                res.status(200).json(updated);
             } catch (err) {
                 res.status(500).json({ error: err.message });
             }
         });
+
 
 
         // Delete post
