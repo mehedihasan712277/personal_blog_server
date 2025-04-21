@@ -143,6 +143,24 @@ async function run() {
             }
         });
 
+        // Get a  posts by email
+        app.get('/api/posts/user/:email', async (req, res) => {
+            try {
+                const email = req.params.email + "@gmail.com";
+                console.log(email);
+
+                const posts = await postDatabase.find({ email: email }).toArray();
+
+                if (posts.length === 0) {
+                    return res.status(404).json({ message: 'No posts found for this email' });
+                }
+
+                res.status(200).json(posts);
+            } catch (err) {
+                res.status(500).json({ error: err.message });
+            }
+        });
+
 
 
         // Delete post
