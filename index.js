@@ -151,11 +151,66 @@ async function run() {
 
                 const posts = await postDatabase.find({ email: email }).toArray();
 
-                if (posts.length === 0) {
-                    return res.status(404).json({ message: 'No posts found for this email' });
-                }
+                // if (posts.length === 0) {
+                //     return res.status(404).json({ message: 'No posts found for this email' });
+                // }
 
                 res.status(200).json(posts);
+            } catch (err) {
+                res.status(500).json({ error: err.message });
+            }
+        });
+
+
+
+        // Add a post to user's favorites
+        app.put('/api/posts/:id/favorite', async (req, res) => {
+            const postId = req.params.id;
+            const { email } = req.body;
+
+            if (!email) {
+                return res.status(400).json({ error: "Email is required" });
+            }
+
+            try {
+                const result = await postDatabase.updateOne(
+                    { _id: new ObjectId(postId) },
+                    { $addToSet: { favourite: email } } // prevents duplicates
+                );
+
+                if (result.modifiedCount === 0) {
+                    return res.status(404).json({ message: "Post not found or already favorited" });
+                }
+
+                res.status(200).json({ message: "Post added to favorites" });
+            } catch (err) {
+                console.error(err);
+                res.status(500).json({ error: err.message });
+            }
+        });
+
+
+
+        // Remove post from user's favorites
+        app.put('/api/posts/:id/unfavorite', async (req, res) => {
+            const postId = req.params.id;
+            const { email } = req.body;
+
+            if (!email) {
+                return res.status(400).json({ error: "Email is required" });
+            }
+
+            try {
+                const result = await postDatabase.updateOne(
+                    { _id: new ObjectId(postId) },
+                    { $pull: { favourite: email } }
+                );
+
+                if (result.modifiedCount === 0) {
+                    return res.status(404).json({ message: "Post not found or email not in favorites" });
+                }
+
+                res.status(200).json({ message: "Post removed from favorites" });
             } catch (err) {
                 res.status(500).json({ error: err.message });
             }
