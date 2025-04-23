@@ -182,7 +182,7 @@ async function run() {
                     return res.status(404).json({ message: "Post not found or already favorited" });
                 }
 
-                res.status(200).json({ message: "Post added to favorites" });
+                res.status(200).json({ success: true, message: "Post added to favorites" });
             } catch (err) {
                 console.error(err);
                 res.status(500).json({ error: err.message });
@@ -210,7 +210,7 @@ async function run() {
                     return res.status(404).json({ message: "Post not found or email not in favorites" });
                 }
 
-                res.status(200).json({ message: "Post removed from favorites" });
+                res.status(200).json({ success: true, message: "Post removed from favorites" });
             } catch (err) {
                 res.status(500).json({ error: err.message });
             }
